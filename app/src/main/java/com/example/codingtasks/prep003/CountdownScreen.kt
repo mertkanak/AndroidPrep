@@ -60,7 +60,8 @@ fun CountdownContent(
         verticalArrangement = Arrangement.Center
     ) {
 
-        Text(uiState.displayLabel, modifier = Modifier.size(72.dp))
+        Text(uiState.displayLabel, fontSize = 72.sp, color = if (uiState.isFinished) MaterialTheme.colorScheme.primary else
+            MaterialTheme.colorScheme.onBackground )
 
         Spacer(modifier = Modifier.height(48.dp))
 
