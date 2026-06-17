@@ -14,28 +14,21 @@ import androidx.compose.ui.graphics.Color
  *
  * Şu an her sınıf placeholder değerler içeriyor. Gerçek değerleri sen dolduracaksın.
  */
-sealed class TrafficLightState {
+sealed class TrafficLightState(
+    val color: Color,
+    val message: String,
+    val durationSeconds: Int
+) {
 
     // TODO: Red sınıfını tamamla — uygun renk, mesaj ve süreyi ata
-    data class Red(
-        val color: Color = Color.Unspecified,   // TODO: Color.Red kullan
-        val message: String = "",               // TODO: "DUR!" gibi bir mesaj yaz
-        val durationSeconds: Int = 0            // TODO: Gerçek süreyi ata (örn. 30)
-    ) : TrafficLightState()
+    data object Red : TrafficLightState(Color.Red, "DUR",5)
+
 
     // TODO: Yellow sınıfını tamamla
-    data class Yellow(
-        val color: Color = Color.Unspecified,   // TODO: Color.Yellow kullan
-        val message: String = "",               // TODO: Uygun mesaj yaz
-        val durationSeconds: Int = 0            // TODO: Gerçek süreyi ata (örn. 5)
-    ) : TrafficLightState()
+    data object Yellow : TrafficLightState(Color.Yellow,"HAZIRLAN",2)
 
     // TODO: Green sınıfını tamamla
-    data class Green(
-        val color: Color = Color.Unspecified,   // TODO: Color.Green kullan
-        val message: String = "",               // TODO: Uygun mesaj yaz
-        val durationSeconds: Int = 0            // TODO: Gerçek süreyi ata (örn. 25)
-    ) : TrafficLightState()
+    data object Green : TrafficLightState(Color.Green,"GEÇ",3)
 }
 
 /**
@@ -48,6 +41,9 @@ sealed class TrafficLightState {
  * Derleyici tüm durumları kapsadığından emin olacak.
  */
 fun TrafficLightState.next(): TrafficLightState {
-    // TODO: Implement — when (this) { is Red -> ... }
-    TODO("next() fonksiyonunu implement et")
+    return when (this) {
+        is TrafficLightState.Red -> TrafficLightState.Yellow
+        is TrafficLightState.Yellow -> TrafficLightState.Green
+        is TrafficLightState.Green -> TrafficLightState.Red
+    }
 }

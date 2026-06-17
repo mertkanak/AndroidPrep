@@ -27,11 +27,11 @@ fun TrafficLightScreen(
 ) {
     // TODO: viewModel.state'i collectAsStateWithLifecycle() ile topla
     // İPUCU: val state by viewModel.state.collectAsStateWithLifecycle()
-    val state: TrafficLightState = TODO("State'i buraya topla")
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     TrafficLightContent(
         state = state,
-        onNextClicked = { TODO("ViewModel'in onNextClicked fonksiyonunu çağır") }
+        onNextClicked = { viewModel.onNextClicked() }
     )
 }
 
@@ -57,29 +57,34 @@ fun TrafficLightContent(
 ) {
     // TODO: state'e göre gösterilecek renk, mesaj ve süreyi belirle
     // İPUCU: when (state) { ... } ile her durumu ele al
-    val backgroundColor: Color = TODO("state'e göre rengi belirle")
-    val message: String = TODO("state'e göre mesajı belirle")
-    val duration: Int = TODO("state'e göre süreyi belirle")
-
+    val backgroundColor: Color = state.color
+    val message: String = state.message
+    val duration: Int = state.durationSeconds
     // TODO: UI'ı oluştur
     // Öneri: Column ile ortala, Box ile arka planı kapla
     Column(
         modifier = Modifier
             .fillMaxSize()
-            // TODO: .background(backgroundColor) ekle
+            .background(backgroundColor)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // TODO: Mesajı büyük, kalın fontla göster (örn. fontSize = 48.sp, fontWeight = FontWeight.Bold)
+        Text(
+            message,
+            fontSize = 48.sp,
+            fontWeight = FontWeight.Bold
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // TODO: Süreyi göster ("$duration saniye" formatında)
+        Text("$duration saniye")
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // TODO: "Sonraki →" butonu — onClick = onNextClicked
+       Button(onClick = onNextClicked) {
+           Text("Sonraki")
+       }
     }
 }
 
@@ -90,3 +95,11 @@ fun TrafficLightContent(
  * İPUCU: TrafficLightContent'i doğrudan çağırabilirsin (ViewModel gerektirmez).
  */
 // TODO: @Preview anotasyonu buraya gelecek
+@Preview
+@Composable
+fun TrafficLightContentPreview() {
+    TrafficLightContent(
+        state = TrafficLightState.Red,
+        onNextClicked = {}
+    )
+}
