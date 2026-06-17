@@ -1,7 +1,10 @@
 package com.example.codingtasks.prep002
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,9 +29,9 @@ data class DashboardUiState(
 class DashboardViewModel : ViewModel() {
 
     // TODO: _uiState'i başlangıç değeriyle (DashboardUiState()) başlat
-    private val _uiState: MutableStateFlow<DashboardUiState> = TODO("Başlangıç state'ini ata")
+    private val _uiState: MutableStateFlow<DashboardUiState> = MutableStateFlow(DashboardUiState())
 
-    val uiState: StateFlow<DashboardUiState> = TODO("_uiState'i asStateFlow() ile sun")
+    val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
     /**
      * TODO: Sıralı yükleme fonksiyonunu implement et.
@@ -44,7 +47,22 @@ class DashboardViewModel : ViewModel() {
      * İPUCU: viewModelScope.launch { ... } içinde çalış
      */
     fun loadSequential() {
-        TODO("Sıralı yüklemeyi implement et")
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val startTime = System.currentTimeMillis()
+            val weather = fetchWeather()
+            val news = fetchNews()
+            val stocks = fetchStocks()
+            val result = (System.currentTimeMillis() - startTime)
+            _uiState.update { it.copy(
+                stocks = stocks,
+                news = news,
+                weather = weather,
+                isLoading = false,
+                elapsedMs = result,
+                lastMode = "Sequential")
+            }
+        }
     }
 
     /**
@@ -65,6 +83,24 @@ class DashboardViewModel : ViewModel() {
      *        awaitAll import: kotlinx.coroutines.awaitAll
      */
     fun loadParallel() {
-        TODO("Paralel yüklemeyi implement et")
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val startTime = System.currentTimeMillis()
+            val weather = async { fetchWeather() }
+            val news = async { fetchNews() }
+            val stocks = async { fetchStocks() }
+
+            val (weatherResult, newsResult, stocksResult) = awaitAll(weather, news, stocks)
+
+            val elapsedMs = System.currentTimeMillis() - startTime
+            _uiState.update { it.copy(
+                stocks = stocksResult,
+                news = newsResult,
+                weather = weatherResult,
+                isLoading = false,
+                elapsedMs = elapsedMs,
+                lastMode = "Parallel")
+            }
+        }
     }
 }

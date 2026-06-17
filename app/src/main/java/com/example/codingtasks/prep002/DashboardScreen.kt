@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
+
 /**
  * PREP TASK 002 — DashboardScreen
  */
@@ -20,13 +21,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun DashboardScreen(
     viewModel: DashboardViewModel = viewModel()
 ) {
-    // TODO: viewModel.uiState'i collectAsStateWithLifecycle() ile topla
-    val uiState: DashboardUiState = TODO("State'i buraya topla")
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     DashboardContent(
         uiState = uiState,
-        onLoadSequential = { TODO("viewModel.loadSequential() çağır") },
-        onLoadParallel = { TODO("viewModel.loadParallel() çağır") }
+        onLoadSequential = { viewModel.loadSequential() },
+        onLoadParallel = { viewModel.loadParallel() }
     )
 }
 
@@ -61,20 +61,36 @@ fun DashboardContent(
         )
 
         Spacer(modifier = Modifier.height(16.dp))
-
-        // TODO: isLoading == true iken CircularProgressIndicator göster
-
-        // TODO: Son mod ve geçen süreyi göster
-        // Örnek: "Mod: Sequential | Süre: 3024 ms"
+        if (uiState.isLoading) {
+           CircularProgressIndicator()
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        if (!uiState.isLoading){
+            Text(text = "Hava durumu: ${uiState.weather}")
+            Text(text = "Haberler: ${uiState.news}")
+            Text(text = "Borsa: ${uiState.stocks}")
+            Text(text = "Geçen Zaman : ${uiState.elapsedMs}")
+            Text(text = "Mode: ${uiState.lastMode}")
+        }
         // TODO: Hava durumu, haberler, borsa verilerini göster
         // Veriler henüz yüklenmemişse ("" ise) gösterme
 
         Spacer(modifier = Modifier.weight(1f))
 
         // TODO: İki buton yan yana — Row ile düzenle
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Button(onClick = onLoadSequential, enabled = !uiState.isLoading) {
+                Text("Sıralı yükle")
+            }
+            Button(onClick = onLoadParallel, enabled = !uiState.isLoading) {
+                Text("Paralel yükle")
+            }
+        }
         // Buton 1: "Sıralı Yükle" → onLoadSequential
         // Buton 2: "Paralel Yükle" → onLoadParallel
         // Her iki butonu da isLoading sırasında enabled = false yap
@@ -85,3 +101,31 @@ fun DashboardContent(
  * TODO: En az 1 @Preview ekle (yükleme öncesi idle durumu)
  */
 // TODO: @Preview buraya
+
+@Composable
+@Preview
+fun DashboardContentPreview() {
+    DashboardContent(
+        uiState = DashboardUiState(
+            isLoading = false,
+            weather = "Sunny, 24°C",
+            news = "Top story: Kotlin 2.0 released",
+            stocks = "BTC: \$65,000",),
+        onLoadParallel = {},
+        onLoadSequential = {},
+    )
+}
+
+@Composable
+@Preview
+fun DashboardContentLoadingPreview() {
+    DashboardContent(
+        uiState = DashboardUiState(
+            isLoading = true,
+            weather = "Sunny, 24°C",
+            news = "Top story: Kotlin 2.0 released",
+            stocks = "BTC: \$65,000",),
+        onLoadParallel = {},
+        onLoadSequential = {},
+    )
+}
