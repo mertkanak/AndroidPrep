@@ -21,12 +21,12 @@ fun CountdownScreen(
     viewModel: CountdownViewModel = viewModel()
 ) {
     // TODO: viewModel.uiState'i collectAsStateWithLifecycle() ile topla
-    val uiState: CountdownUiState = TODO("State'i buraya topla")
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     CountdownContent(
         uiState = uiState,
-        onStart = { TODO("viewModel.startCountdown() çağır") },
-        onStop = { TODO("viewModel.stopCountdown() çağır") }
+        onStart = { viewModel.startCountdown() },
+        onStop = { viewModel.stopCountdown() }
     )
 }
 
@@ -59,16 +59,20 @@ fun CountdownContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // TODO: displayLabel'ı büyük fontla göster
-        // İPUCU: isFinished ise farklı renk kullan (örn. MaterialTheme.colorScheme.primary)
+
+        Text(uiState.displayLabel, modifier = Modifier.size(72.dp))
 
         Spacer(modifier = Modifier.height(48.dp))
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // TODO: "Başlat" butonu — enabled = !uiState.isRunning
-            // TODO: "Durdur" butonu — enabled = uiState.isRunning
+            Button(onClick = onStart, enabled = !uiState.isRunning) {
+                Text("Başlat")
+            }
+            Button(onClick = onStop, enabled = uiState.isRunning) {
+                Text("Durdur")
+            }
         }
     }
 }
@@ -77,3 +81,31 @@ fun CountdownContent(
  * TODO: En az 1 @Preview ekle
  */
 // TODO: @Preview buraya
+
+@Composable
+@Preview
+fun CountdownContentPreview() {
+    CountdownContent(
+        uiState = CountdownUiState(
+            isRunning = true,
+            displayLabel = "12",
+            isFinished = false
+        ),
+        onStart = {},
+        onStop = {}
+    )
+}
+@Composable
+@Preview
+fun CountdownContentFinishedPreview() {
+    CountdownContent(
+        uiState = CountdownUiState(
+            isRunning = false,
+            displayLabel = "12",
+            isFinished = true
+        ),
+        onStart = {},
+        onStop = {}
+    )
+}
+

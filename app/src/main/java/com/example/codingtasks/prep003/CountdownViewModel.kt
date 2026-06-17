@@ -6,6 +6,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
  * UI state — geri sayım ekranında gösterilecek tüm veriler
@@ -22,12 +27,12 @@ data class CountdownUiState(
 class CountdownViewModel : ViewModel() {
 
     // TODO: _uiState'i başlangıç değeriyle başlat
-    private val _uiState: MutableStateFlow<CountdownUiState> = TODO("Başlangıç state'ini ata")
-    val uiState: StateFlow<CountdownUiState> = TODO("_uiState'i asStateFlow() ile sun")
+    private val _uiState: MutableStateFlow<CountdownUiState> = MutableStateFlow(CountdownUiState())
+    val uiState: StateFlow<CountdownUiState> = _uiState.asStateFlow()
 
     // TODO: countdownJob'u tanımla (başlangıç değeri null)
     // İPUCU: private var countdownJob: Job? = null
-    private var countdownJob: Job? = TODO("Job değişkenini tanımla")
+    private var countdownJob: Job? = null
 
     /**
      * TODO: Geri sayımı başlat.
@@ -44,7 +49,33 @@ class CountdownViewModel : ViewModel() {
      *   7. .collect { label -> } ile her değeri displayLabel'a yaz
      */
     fun startCountdown() {
-        TODO("Geri sayımı başlat")
+        countdownJob?.cancel()
+        _uiState.update {
+            it.copy(
+                isRunning = true,
+                isFinished = false
+            )
+        }
+        countdownJob = viewModelScope.launch {
+            countdownFlow(10)
+                .map { "$it saniye" }
+                .onCompletion { cause ->
+                    if (cause == null) {
+                        _uiState.update {
+                            it.copy(
+                                displayLabel = "Bitti!",
+                                isFinished = true,
+                                isRunning = false
+                            )
+                        }
+                    } else {
+                        _uiState.update { it.copy(isRunning = false) }
+                    }
+                }
+                .collect { label ->
+                    _uiState.update { it.copy(displayLabel = label) }
+                }
+        }
     }
 
     /**
@@ -59,11 +90,13 @@ class CountdownViewModel : ViewModel() {
      *      dolayısıyla "Bitti!" gösterilmez — bu beklenen davranış.
      */
     fun stopCountdown() {
-        TODO("Job'u iptal et")
+        countdownJob?.cancel()
+        countdownJob = null
+        _uiState.update { it.copy(isRunning = false) }
     }
 
     override fun onCleared() {
         super.onCleared()
-        // TODO: ViewModel temizlenirken aktif job'u iptal et
+        countdownJob?.cancel()
     }
 }

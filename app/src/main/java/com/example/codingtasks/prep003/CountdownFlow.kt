@@ -1,6 +1,8 @@
 package com.example.codingtasks.prep003
 
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 /**
  * PREP TASK 003 — Cold Flow Builder
@@ -21,5 +23,12 @@ import kotlinx.coroutines.flow.Flow
  * İPUCU: kotlinx.coroutines.flow.flow ve kotlinx.coroutines.delay import'larını ekle
  */
 fun countdownFlow(from: Int): Flow<Int> {
-    TODO("flow { } builder ile geri sayım flow'u oluştur")
+    return flow {
+        for (i in from downTo 0) {
+            emit(i)
+            if (i > 0) {
+                delay(1000)
+            }
+        }
+    }
 }
