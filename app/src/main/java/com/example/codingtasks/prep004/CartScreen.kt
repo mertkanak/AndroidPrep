@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
@@ -24,27 +25,22 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun CartScreen(
     viewModel: CartViewModel = viewModel()
 ) {
-    // TODO: cartItems'ı collectAsStateWithLifecycle() ile topla
-    val cartItems: List<Product> = TODO("cartItems'ı buraya topla")
+    val cartItems by viewModel.cartItems.collectAsStateWithLifecycle()
 
-    // TODO: SnackbarHostState oluştur (remember ile)
-    val snackbarHostState: SnackbarHostState = TODO("remember { SnackbarHostState() }")
+    val snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 
-    // TODO: LaunchedEffect ile uiEvents'i dinle ve Snackbar göster
-    // İPUCU:
-    // LaunchedEffect(Unit) {
-    //     viewModel.uiEvents.collect { message ->
-    //         snackbarHostState.showSnackbar(message)
-    //     }
-    // }
+    LaunchedEffect(Unit) {
+        viewModel.uiEvents.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
 
-    // TODO: Scaffold kullan — snackbarHost parametresini doldur
     Scaffold(
-        snackbarHost = { TODO("SnackbarHost(snackbarHostState) ekle") }
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         CartContent(
             cartItems = cartItems,
-            onRemoveProduct = { TODO("viewModel.removeProduct(it) çağır") },
+            onRemoveProduct = { product -> viewModel.removeProduct(product) },
             modifier = Modifier.padding(paddingValues)
         )
     }
@@ -69,15 +65,29 @@ fun CartContent(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // TODO: "Sepetim" başlığı (MaterialTheme.typography.headlineMedium)
+        Text(
+            "Sepetim",
+            fontSize = 48.sp,
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.primary)
 
         Spacer(modifier = Modifier.height(8.dp))
 
         if (cartItems.isEmpty()) {
-            // TODO: "Sepetiniz boş" mesajını ortada göster
+            Text("Sepetiniz boş", fontSize = 42.sp,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary,)
         } else {
-            // TODO: LazyColumn içinde cartItems'ı ProductItem ile göster
-            // İPUCU: items(cartItems, key = { it.id }) { product -> ProductItem(...) }
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                items(cartItems, key = { it.id }) { item ->
+                    ProductItem(product = item, onRemove = { onRemoveProduct(item) })
+                }
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
         }
     }
 }
@@ -96,7 +106,18 @@ fun ProductItem(
     product: Product,
     onRemove: () -> Unit
 ) {
-    // TODO: Row içinde ürün bilgisi ve silme butonu
+   Row(
+       modifier = Modifier.fillMaxWidth(),
+       verticalAlignment = Alignment.CenterVertically
+   ) {
+       Column(modifier = Modifier.weight(1f)) {
+           Text(text = product.name, style = MaterialTheme.typography.bodyMedium)
+           Text(text = "${product.price} ₺", style = MaterialTheme.typography.bodyMedium)
+       }
+       Button(onClick = onRemove) {
+           Text("Ürünü Sil")
+       }
+   }
 }
 
 /**
